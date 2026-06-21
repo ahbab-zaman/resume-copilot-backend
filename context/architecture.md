@@ -1,5 +1,7 @@
 # Architecture
 
+> **Used in:** Frontend repo AND Backend repo (identical copy in both `context/` folders). This is the most important file in the project — it defines the boundary between the two codebases.
+
 ## Why Two Repos
 
 The original reference docs this project is adapted from assumed one Next.js full-stack app (Server Actions, API routes, and DB calls all in the same process). **This project is split into two deployable services that share one PostgreSQL database and talk over HTTP:**
@@ -108,9 +110,22 @@ Browser ──API call + Bearer JWT──▶ Express ──verifies via JWKS─�
 │   │   └── QuestionCard.tsx
 │   └── settings/
 │       └── ProfileForm.tsx
+├── providers/
+│   ├── QueryProvider.tsx           → wraps the app in a TanStack Query QueryClientProvider
+│   └── ReduxProvider.tsx           → wraps the app in the Redux store Provider
+├── store/
+│   ├── index.ts                    → configureStore(), combines slices
+│   ├── activeResumeSlice.ts         → currently active resume, shared across pages
+│   ├── uiSlice.ts                  → theme, sidebar collapsed state
+│   └── hooks.ts                    → typed useAppDispatch / useAppSelector
+├── hooks/
+│   └── queries/                    → one file per resource, TanStack Query hooks only
+│       ├── useResumes.ts
+│       ├── useAnalysis.ts
+│       └── useApplications.ts
 ├── lib/
 │   ├── auth.ts                    → better-auth server instance + JWT plugin config
-│   ├── auth-client.ts             → better-auth React client
+│   ├── auth-client.ts              → better-auth React client
 │   ├── api-client.ts              → fetch wrapper that calls the Express backend with Bearer token
 │   └── utils.ts
 └── types/
@@ -256,7 +271,7 @@ The backend treats `user.id` purely as a foreign-key value (no FK constraint enf
 | Column            | Type        | Notes                              |
 | ----------------- | ----------- | ---------------------------------- |
 | id                | uuid        | PK                                 |
-| user_id           | uuid        | from JWT `sub`, always filtered on |
+| user_id           | text        | opaque JWT `sub`, always filtered on |
 | title             | text        | user-given or filename             |
 | original_file_url | text        | stored PDF location                |
 | parsed_text       | text        | extracted via pdf-parse            |
@@ -381,3 +396,4 @@ All routes require `Authorization: Bearer <jwt>` except where noted. All respons
 - Every AI call is wrapped in try/catch; a Gemini failure always falls back to DeepSeek before the request is allowed to fail; a failure of both is logged to `agent_logs` and returned to the user as a generic, human-readable error.
 - PDF buffers are generated server-side only and uploaded/saved, never streamed raw HTML to the client to print.
 - No hardcoded hex colors or raw Tailwind color classes in frontend components — use the tokens in `ui-tokens.md`.
+- TanStack Query owns all server data (resumes, analyses, applications, dashboard stats); Redux owns only client-only state with no server source of truth (active resume selection, theme, sidebar state). The same piece of data is never duplicated into both — see `code-standards.md`'s State Management section.

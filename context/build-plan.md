@@ -1,5 +1,7 @@
 # Build Plan
 
+> **Used in:** Frontend repo AND Backend repo (identical copy in both `context/` folders).
+
 ## Core Principle
 
 Full page UI is built with mock data first and verified visually before any logic is written, same as before — but now "logic" is split: **backend logic** (DB + AI) is built and tested independently via direct API calls (curl/Postman) before the **frontend** wires it up. Every feature must be visible/testable in its own repo before moving to the next. No invisible phases on either side.
@@ -40,7 +42,13 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 
 **Frontend:** `(app)/layout.tsx` with `Sidebar.tsx` (Dashboard, Copilot, Resumes, Applications, Interview, Settings), auth guard redirecting logged-out users to `/login`.
 
-### 06 Landing + Pricing Pages
+### 06 State Management Setup
+
+**Frontend:** Install `@tanstack/react-query`, `@reduxjs/toolkit`, `react-redux`. Build `providers/QueryProvider.tsx` and `providers/ReduxProvider.tsx`, wrap the root layout in both. Build `store/index.ts` with two starter slices (`activeResumeSlice`, `uiSlice`) and `store/hooks.ts`. No feature-specific query hooks yet — those are built alongside each feature that needs one (Resumes, Applications, Dashboard, Copilot). See `code-standards.md`'s State Management section for the dividing rule between the two tools before building anything that uses either.
+
+---
+
+### 07 Landing + Pricing Pages
 
 **Frontend:** Full landing page UI (Hero, Features, How It Works, FAQ, Footer) and pricing page, all free tier, with mock testimonial data.
 
@@ -48,11 +56,11 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 
 ## Phase 3 — Resume Manager
 
-### 07 Resumes Page — Full UI
+### 08 Resumes Page — Full UI
 
 **Frontend:** `/resumes` page UI with mock data — table of resumes (name, date, ATS score, actions), upload button/dialog.
 
-### 08 Resume Upload + Extraction
+### 09 Resume Upload + Extraction
 
 **Backend:** `POST /api/resumes` — accepts multipart PDF, runs `pdf-parse`, saves row with `parsed_text`. If extraction returns empty/too-short text → `400` with human-readable error.
 
@@ -62,29 +70,29 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 
 ## Phase 4 — The Copilot Flow (flagship)
 
-### 09 Copilot Page — Full UI
+### 10 Copilot Page — Full UI
 
 **Frontend:** `/copilot` 3-column UI with mock data — input panel (resume select/upload, JD textarea), processing/loading states, output results panel (ATS Score Dashboard, Insights Panel, Output Tabs for Resume/Cover Letter/Interview Qs).
 
-### 10 ATS Analysis — AI Service
+### 11 ATS Analysis — AI Service
 
 **Backend:** `services/ai/aiClient.ts` (Gemini → DeepSeek fallback wrapper) and `services/ai/prompts/atsAnalysis.ts`. `POST /api/analyses` runs the prompt, validates the structured JSON shape, saves a `job_analyses` row, returns it.
 
 **Frontend:** Wire Analyze button to `POST /api/analyses`, render real ATS Score Dashboard (overall/skills/experience/education + missing keywords) and Insights Panel (strengths/weaknesses) from the response.
 
-### 11 Resume Optimizer
+### 12 Resume Optimizer
 
 **Backend:** `services/ai/prompts/resumeOptimizer.ts`, `POST /api/analyses/:id/optimize` — loads the analysis + original resume text, runs the prompt, saves `optimized_resumes` row.
 
 **Frontend:** Wire "Optimize Resume" tab — side-by-side original vs optimized view, Download PDF button.
 
-### 12 Cover Letter Generator
+### 13 Cover Letter Generator
 
 **Backend:** `services/ai/prompts/coverLetter.ts`, `POST /api/analyses/:id/cover-letter` with `{ tone }`. Generates content, optionally renders PDF via `services/pdf/generatePdf.tsx`, saves `cover_letters` row.
 
 **Frontend:** Wire "Cover Letter" tab — tone selector, editable textarea pre-filled with AI output, Download PDF button.
 
-### 13 Mock Interview Generator (from Copilot context)
+### 14 Mock Interview Generator (from Copilot context)
 
 **Backend:** `services/ai/prompts/interviewQuestions.ts`, reusable by both the Copilot tab and the standalone `/interview` page.
 
@@ -94,11 +102,11 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 
 ## Phase 5 — Standalone Interview Practice
 
-### 14 Interview Page — Full UI
+### 15 Interview Page — Full UI
 
 **Frontend:** `/interview` page UI with mock data — role selector, difficulty selector, Generate button, question cards grouped Technical/Behavioral/HR.
 
-### 15 Interview Page — Wired
+### 16 Interview Page — Wired
 
 **Backend:** `POST /api/interview` with `{ role, difficulty }`, no resume/JD required — generates a fresh question set, saves `interview_sessions` row.
 
@@ -108,11 +116,11 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 
 ## Phase 6 — Application Tracker
 
-### 16 Applications Page — Full UI
+### 17 Applications Page — Full UI
 
 **Frontend:** `/applications` Kanban UI with mock data — columns Applied/Screening/Interview/Rejected/Offer, draggable cards, filter bar, stats row.
 
-### 17 Applications — Wired
+### 18 Applications — Wired
 
 **Backend:** `GET/POST/PATCH/DELETE /api/applications` — full CRUD, scoped to `user_id`.
 
@@ -122,11 +130,11 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 
 ## Phase 7 — Dashboard
 
-### 18 Dashboard Page — Full UI
+### 19 Dashboard Page — Full UI
 
 **Frontend:** `/dashboard` UI with mock data — four stat cards, recent activity list, quick action buttons, incomplete-resume banner if no active resume.
 
-### 19 Dashboard — Real Data
+### 20 Dashboard — Real Data
 
 **Backend:** `GET /api/dashboard/stats` (plain `COUNT` queries across the four tables) and `GET /api/dashboard/activity` (union + sort of recent rows across `resumes`, `job_analyses`, `cover_letters`, `applications`, last 10).
 
@@ -136,7 +144,7 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 
 ## Phase 8 — Settings
 
-### 20 Settings Page
+### 21 Settings Page
 
 **Frontend:** `/settings` — profile fields (from better-auth user), theme toggle, delete account flow (calls better-auth's delete-user action; backend is not involved since it never owns user data).
 
@@ -147,11 +155,11 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 | Phase                         | Features |
 | ----------------------------- | -------- |
 | Phase 1 — Foundation          | 4        |
-| Phase 2 — App Shell           | 2        |
+| Phase 2 — App Shell           | 3        |
 | Phase 3 — Resume Manager      | 2        |
 | Phase 4 — Copilot Flow        | 5        |
 | Phase 5 — Interview Practice  | 2        |
 | Phase 6 — Application Tracker | 2        |
 | Phase 7 — Dashboard           | 2        |
 | Phase 8 — Settings            | 1        |
-| **Total**                     | **20**   |
+| **Total**                     | **21**   |

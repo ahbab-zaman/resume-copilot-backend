@@ -12,10 +12,13 @@
     "migrate:undo": "sequelize-cli db:migrate:undo --config sequelize.config.cjs --migrations-path migrations"
   },
   "dependencies": {
+    "@types/multer": "^2.1.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "helmet": "^8.0.0",
     "jose": "^5.10.0",
+    "multer": "^2.2.0",
+    "pdf-parse": "^2.4.5",
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.5",
