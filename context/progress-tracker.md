@@ -8,8 +8,8 @@
 
 **Phase:** Phase 4 - Copilot Flow
 **Repo (frontend/backend/both):** backend
-**Last completed:** 13 Cover Letter Generator
-**Next:** 14 Mock Interview Generator (Copilot tab)
+**Last completed:** 14 Mock Interview Generator (Copilot tab)
+**Next:** 15 Interview Page - Full UI
 
 ---
 
@@ -39,7 +39,7 @@
 - [x] 11 ATS Analysis - AI Service _(both)_ - backend now exposes the ATS analysis endpoint, AI fallback wrapper, and saved analysis model
 - [x] 12 Resume Optimizer _(both)_ - backend optimize endpoint and frontend side-by-side compare are wired
 - [x] 13 Cover Letter Generator _(both)_ - backend cover letter prompt/service and `/api/analyses/:id/cover-letter` are wired
-- [ ] 14 Mock Interview Generator (Copilot tab) _(both)_
+- [x] 14 Mock Interview Generator (Copilot tab) _(both)_ - backend now exposes `/api/interview`, saves interview sessions, and uses the shared interview question prompt
 
 ### Phase 5 - Interview Practice
 
@@ -68,6 +68,7 @@
 - The backend now has the ATS analysis table, AI prompt/service layer, and `/api/analyses` routes needed for Copilot scoring.
 - The backend now has the optimized resumes table plus `/api/analyses/:id/optimize` for the rewrite flow.
 - The backend now has the cover letters table plus `/api/analyses/:id/cover-letter` for tone-based generation.
+- The backend now has the interview sessions table plus `/api/interview` for role/difficulty-based question generation.
 
 ---
 

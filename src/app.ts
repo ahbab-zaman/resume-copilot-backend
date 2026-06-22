@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/errorHandler";
 import analysesRoutes from "./routes/analyses.routes";
 import coverLettersRoutes from "./routes/coverLetters.routes";
 import healthRoutes from "./routes/health.routes";
+import interviewRoutes from "./routes/interview.routes";
 import protectedRoutes from "./routes/protected.routes";
 import resumeRoutes from "./routes/resumes.routes";
 
@@ -27,6 +28,7 @@ export function createApp(): express.Express {
   app.use("/api/resumes", resumeRoutes);
   app.use("/api/analyses", analysesRoutes);
   app.use("/api/analyses", coverLettersRoutes);
+  app.use("/api/interview", interviewRoutes);
 
   app.use((_req, res) => {
     res.status(404).json({

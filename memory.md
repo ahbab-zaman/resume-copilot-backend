@@ -1,47 +1,40 @@
-# Memory â€” Copilot ATS API (Backend)
+# Memory — Copilot Interview Generator (Backend)
 
-Last updated: 2026-06-22
+Last updated: 2026-06-23
 
 ## What was built
 
-- Added `src/models/JobAnalysis.ts` for saved ATS analysis rows.
-- Added `src/models/AgentLog.ts` for AI failure logging.
-- Added `src/utils/logger.ts` to persist agent events.
-- Added `src/services/ai/prompts/atsAnalysis.ts` with the ATS prompt and zod schema.
-- Added `src/services/ai/geminiClient.ts` and `src/services/ai/deepseekClient.ts` using direct HTTP fetch calls.
-- Added `src/services/ai/aiClient.ts` with Gemini-first, DeepSeek-fallback structured generation.
-- Added `src/services/analyses/analysesService.ts` for resume lookup, ATS scoring, persistence, and serialization.
-- Added `src/controllers/analyses.controller.ts` and `src/routes/analyses.routes.ts`.
-- Mounted `/api/analyses` in `src/app.ts`.
-- Added migrations for `job_analyses` and `agent_logs`.
-- Updated `context/progress-tracker.md` to mark ATS analysis as completed on the backend side.
-- Updated `ai-resume-backend/.env.example` with the AI provider keys required for local development.
+- Added `src/services/ai/prompts/interviewQuestions.ts` with the interview question prompt and zod schema.
+- Added `src/models/InterviewSession.ts` for persisted interview sessions.
+- Added migration `migrations/20260622060000-create-interview-sessions.cjs`.
+- Added `src/services/interview/interviewService.ts` to generate, validate, and persist interview sessions.
+- Added `src/controllers/interview.controller.ts` and `src/routes/interview.routes.ts`.
+- Mounted the new route under `/api/interview` in `src/app.ts`.
+- Updated `context/progress-tracker.md` to mark feature 14 complete on the backend side.
 
 ## Decisions made
 
-- Kept all AI work behind the backend boundary.
-- Used direct provider HTTP requests instead of adding SDK dependencies in this session.
-- Validated provider JSON with zod before persisting analysis results.
-- Stored AI failures in `agent_logs` and returned only generic client-facing errors.
-- Scoped analysis lookups to `req.userId` and `resumeId` from the verified JWT flow.
+- Kept interview generation behind the backend boundary with the same Gemini-to-DeepSeek fallback path used by other AI features.
+- Stored the interview session as a persisted `interview_sessions` row so the frontend can treat the response as saved server data.
+- Locked the interview payload to 6 questions total, split across Technical, Behavioral, and HR categories.
 
 ## Problems solved
 
-- The backend did not yet have any analyses endpoint or model before this session.
-- The TypeScript build failed once on a strict null check in the JSON extraction helper; that was fixed and the backend build now passes.
+- The backend previously had no `/api/interview` route even though the architecture contract already required it.
+- The backend now saves and returns interview sessions in the same contract-driven pattern as analyses, optimized resumes, and cover letters.
+- The backend build passes after adding the new model, service, controller, route, and migration.
 
 ## Current state
 
-- `POST /api/analyses` creates a saved ATS analysis from `{ resumeId, jobDescriptionText }`.
-- `GET /api/analyses/:id` returns a saved analysis for the authenticated user.
-- The backend build passes.
-- The frontend Copilot UI is aligned with the contract implemented here.
+- `POST /api/interview` generates a role/difficulty-specific interview question set and saves it.
+- The interview session data is persisted in `interview_sessions`.
+- The backend remains within its boundary: AI and persistence live here, while UI lives in the frontend.
 
 ## Next session starts with
 
-- Implement `POST /api/analyses/:id/optimize` and the optimizer prompt/service path.
+- Build feature 15: the standalone Interview page full UI in the frontend repo.
 
 ## Open questions
 
-- `GEMINI_API_KEY` and `DEEPSEEK_API_KEY` must be set in the backend environment for live AI calls.
-- The remaining Copilot features still need backend routes and frontend tabs wired.
+- The interview page UI still needs to be built on top of the new `/api/interview` contract.
+- If later work changes the question shape or session metadata, the frontend `QuestionCard` and shared types must stay in sync with this contract.
