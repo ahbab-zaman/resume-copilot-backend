@@ -8,8 +8,8 @@
 
 **Phase:** Phase 4 - Copilot Flow
 **Repo (frontend/backend/both):** backend
-**Last completed:** 11 ATS Analysis - AI Service
-**Next:** 12 Resume Optimizer
+**Last completed:** 13 Cover Letter Generator
+**Next:** 14 Mock Interview Generator (Copilot tab)
 
 ---
 
@@ -17,10 +17,10 @@
 
 ### Phase 1 - Foundation
 
-- [ ] 01 Backend Skeleton _(backend)_
+- [x] 01 Backend Skeleton _(backend)_ - Express boots, /health works, Sequelize connects, protected route rejects unauthenticated requests
 - [ ] 02 Frontend Skeleton + better-auth _(frontend)_
 - [ ] 03 Database Schema _(both)_
-- [ ] 04 Cross-Repo Auth Wiring _(both)_
+- [x] 04 Cross-Repo Auth Wiring _(both)_ - frontend issues bearer JWTs and backend verifyAuth validates them with JWKS
 
 ### Phase 2 - App Shell
 
@@ -37,8 +37,8 @@
 
 - [ ] 10 Copilot Page - Full UI _(frontend)_
 - [x] 11 ATS Analysis - AI Service _(both)_ - backend now exposes the ATS analysis endpoint, AI fallback wrapper, and saved analysis model
-- [ ] 12 Resume Optimizer _(both)_
-- [ ] 13 Cover Letter Generator _(both)_
+- [x] 12 Resume Optimizer _(both)_ - backend optimize endpoint and frontend side-by-side compare are wired
+- [x] 13 Cover Letter Generator _(both)_ - backend cover letter prompt/service and `/api/analyses/:id/cover-letter` are wired
 - [ ] 14 Mock Interview Generator (Copilot tab) _(both)_
 
 ### Phase 5 - Interview Practice
@@ -66,6 +66,8 @@
 
 - The backend now has the resumes table and CRUD API endpoints needed for the upload/list/rename/delete/set-active flow.
 - The backend now has the ATS analysis table, AI prompt/service layer, and `/api/analyses` routes needed for Copilot scoring.
+- The backend now has the optimized resumes table plus `/api/analyses/:id/optimize` for the rewrite flow.
+- The backend now has the cover letters table plus `/api/analyses/:id/cover-letter` for tone-based generation.
 
 ---
 
