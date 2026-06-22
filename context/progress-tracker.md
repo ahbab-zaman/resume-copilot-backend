@@ -6,10 +6,10 @@
 
 ## Current Status
 
-**Phase:** Phase 4 - Copilot Flow
+**Phase:** Phase 8 - Settings
 **Repo (frontend/backend/both):** backend
-**Last completed:** 14 Mock Interview Generator (Copilot tab)
-**Next:** 15 Interview Page - Full UI
+**Last completed:** 20 Dashboard - Real Data
+**Next:** 21 Settings Page (frontend)
 
 ---
 
@@ -44,17 +44,17 @@
 ### Phase 5 - Interview Practice
 
 - [ ] 15 Interview Page - Full UI _(frontend)_
-- [ ] 16 Interview Page - Wired _(both)_
+- [x] 16 Interview Page - Wired _(both)_ - backend already exposes `/api/interview`; frontend now consumes it with the standalone interview page
 
 ### Phase 6 - Application Tracker
 
 - [ ] 17 Applications Page - Full UI _(frontend)_
-- [ ] 18 Applications - Wired _(both)_
+- [x] 18 Applications - Wired _(both)_
 
 ### Phase 7 - Dashboard
 
 - [ ] 19 Dashboard Page - Full UI _(frontend)_
-- [ ] 20 Dashboard - Real Data _(both)_
+- [x] 20 Dashboard - Real Data _(both)_ - dashboard stats/activity endpoints now exist
 
 ### Phase 8 - Settings
 
@@ -69,6 +69,8 @@
 - The backend now has the optimized resumes table plus `/api/analyses/:id/optimize` for the rewrite flow.
 - The backend now has the cover letters table plus `/api/analyses/:id/cover-letter` for tone-based generation.
 - The backend now has the interview sessions table plus `/api/interview` for role/difficulty-based question generation.
+- The backend now has the applications table plus full CRUD routes under `/api/applications`, scoped to the authenticated user.
+- The backend now has `/api/dashboard/stats` and `/api/dashboard/activity`, with counts and a unified activity feed derived from the existing tables.
 
 ---
 

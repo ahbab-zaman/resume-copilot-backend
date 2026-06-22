@@ -4,6 +4,8 @@ import helmet from "helmet";
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/errorHandler";
 import analysesRoutes from "./routes/analyses.routes";
+import applicationsRoutes from "./routes/applications.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
 import coverLettersRoutes from "./routes/coverLetters.routes";
 import healthRoutes from "./routes/health.routes";
 import interviewRoutes from "./routes/interview.routes";
@@ -29,6 +31,8 @@ export function createApp(): express.Express {
   app.use("/api/analyses", analysesRoutes);
   app.use("/api/analyses", coverLettersRoutes);
   app.use("/api/interview", interviewRoutes);
+  app.use("/api/applications", applicationsRoutes);
+  app.use("/api/dashboard", dashboardRoutes);
 
   app.use((_req, res) => {
     res.status(404).json({
