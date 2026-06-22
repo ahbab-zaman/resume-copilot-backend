@@ -9,7 +9,7 @@
 **Phase:** Phase 8 - Settings
 **Repo (frontend/backend/both):** backend
 **Last completed:** 20 Dashboard - Real Data
-**Next:** 21 Settings Page (frontend)
+**Next:** Complete
 
 ---
 
@@ -71,6 +71,7 @@
 - The backend now has the interview sessions table plus `/api/interview` for role/difficulty-based question generation.
 - The backend now has the applications table plus full CRUD routes under `/api/applications`, scoped to the authenticated user.
 - The backend now has `/api/dashboard/stats` and `/api/dashboard/activity`, with counts and a unified activity feed derived from the existing tables.
+- Feature 21 is frontend-only and now complete in the frontend repo; the backend has no settings work to add.
 
 ---
 

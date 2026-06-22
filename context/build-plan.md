@@ -1,12 +1,12 @@
 # Build Plan
 
-> **Used in:** Frontend repo AND Backend repo (identical copy in both `context/` folders).
-
 ## Core Principle
 
-Full page UI is built with mock data first and verified visually before any logic is written, same as before — but now "logic" is split: **backend logic** (DB + AI) is built and tested independently via direct API calls (curl/Postman) before the **frontend** wires it up. Every feature must be visible/testable in its own repo before moving to the next. No invisible phases on either side.
+Each feature is built **end-to-end in one pass**: backend logic first, then the frontend wires it in immediately via a TanStack Query hook — never UI-with-mock-data sitting disconnected from a real endpoint. Visual polish (matching `ui-rules.md`/`ui-tokens.md` exactly — radius, shadows, spacing, the marketing-vs-in-app button scales) is deferred to a dedicated **Design Pass** phase at the end, once every feature is functionally wired and testable.
 
-Each numbered feature below states what happens in the **Frontend repo** and what happens in the **Backend repo** separately — they are built and tested independently, then connected.
+This keeps two separate, independently-completable questions apart: _does it work_ (Phases 1–2) and _does it look right_ (Phase 3). You're never blocked on design to verify logic works, and never blocked on logic to verify design looks right. A page can be ugly-but-functional through Phase 2 — that's expected, not a problem.
+
+Every feature below states what happens in the **Frontend repo**, the **Backend repo**, or **both** — built together when tagged `(both)`, not as two separate visits.
 
 ---
 
@@ -16,15 +16,15 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 
 **Backend:** Express app boots, `/health` returns 200, Sequelize connects to Postgres, `verifyAuth` middleware exists and rejects unauthenticated requests with 401 on a dummy protected route.
 
-### 02 Frontend Skeleton + better-auth
+### 02 Frontend Skeleton + better-auth ✅ Done
 
-**Frontend:** Next.js app boots, Tailwind + shadcn installed, root layout with Inter font. better-auth configured (`lib/auth.ts`) with email/password + Google OAuth + JWT plugin. `/login` and `/register` pages working end to end — can create an account and land on a placeholder `/dashboard`.
+**Frontend:** Next.js app boots, Tailwind + shadcn installed, root layout with Geist font. better-auth configured (`lib/auth.ts`) with email/password + Google OAuth + JWT plugin. `/login` and `/register` working end to end — can create an account and land on a placeholder `/dashboard`.
 
 ### 03 Database Schema
 
 **Backend:** All Sequelize models created (`resumes`, `job_analyses`, `optimized_resumes`, `cover_letters`, `interview_sessions`, `applications`, `agent_logs`) and migrated.
 
-**Frontend:** better-auth's own tables (`user`, `session`, `account`, `verification`) created via its CLI migration against the same Postgres instance.
+**Frontend:** better-auth's own tables (`user`, `session`, `account`, `verification`) created via its CLI migration against the same Postgres instance. _(Already done — confirmed working since auth is live.)_
 
 ### 04 Cross-Repo Auth Wiring
 
@@ -34,132 +34,115 @@ Each numbered feature below states what happens in the **Frontend repo** and wha
 
 **Test:** a protected backend route returns the correct `userId` when called from a logged-in frontend session.
 
----
+### 05 App Shell (Functional Only)
 
-## Phase 2 — App Shell
-
-### 05 Sidebar + Authenticated Layout
-
-**Frontend:** `(app)/layout.tsx` with `Sidebar.tsx` (Dashboard, Copilot, Resumes, Applications, Interview, Settings), auth guard redirecting logged-out users to `/login`.
+**Frontend:** `(app)/layout.tsx` with a working `Sidebar.tsx` (Dashboard, Copilot, Resumes, Applications, Interview, Settings — links and routing only), auth guard redirecting logged-out users to `/login`. Unstyled or minimally styled — full visual treatment happens in Phase 3.
 
 ### 06 State Management Setup
 
-**Frontend:** Install `@tanstack/react-query`, `@reduxjs/toolkit`, `react-redux`. Build `providers/QueryProvider.tsx` and `providers/ReduxProvider.tsx`, wrap the root layout in both. Build `store/index.ts` with two starter slices (`activeResumeSlice`, `uiSlice`) and `store/hooks.ts`. No feature-specific query hooks yet — those are built alongside each feature that needs one (Resumes, Applications, Dashboard, Copilot). See `code-standards.md`'s State Management section for the dividing rule between the two tools before building anything that uses either.
+**Frontend:** Install `@tanstack/react-query`, `@reduxjs/toolkit`, `react-redux`. Build `providers/QueryProvider.tsx` and `providers/ReduxProvider.tsx`, wrap the root layout in both. Build `store/index.ts` with two starter slices (`activeResumeSlice`, `uiSlice`) and `store/hooks.ts`. See `code-standards.md`'s State Management section for the dividing rule between the two tools.
 
 ---
 
-### 07 Landing + Pricing Pages
+## Phase 2 — Core Features (Backend + Frontend, Functional)
 
-**Frontend:** Full landing page UI (Hero, Features, How It Works, FAQ, Footer) and pricing page, all free tier, with mock testimonial data.
+Every feature here is built as one pass per feature: backend endpoint and model, then the frontend query/mutation hook and just enough UI (forms, buttons, a plain list/table) to actually exercise it end to end. Styling to spec comes in Phase 3.
 
----
+### 07 Resume Upload + Extraction _(both)_
 
-## Phase 3 — Resume Manager
+**Backend:** `POST /api/resumes` — `multer` memory upload, `pdf-parse` extraction, save row with `parsed_text`. `GET/PATCH/DELETE /api/resumes`.
 
-### 08 Resumes Page — Full UI
+**Frontend:** `hooks/queries/useResumes.ts` (`useResumes`, `useUploadResume`, `useDeleteResume`, `useSetActiveResume`). Minimal `/resumes` page — upload control + plain list, wired to real data.
 
-**Frontend:** `/resumes` page UI with mock data — table of resumes (name, date, ATS score, actions), upload button/dialog.
+### 08 ATS Analysis — AI Service _(both)_
 
-### 09 Resume Upload + Extraction
+**Backend:** `services/ai/aiClient.ts` (Gemini → DeepSeek fallback), `services/ai/prompts/atsAnalysis.ts`, `POST /api/analyses`, `GET /api/analyses/:id`.
 
-**Backend:** `POST /api/resumes` — accepts multipart PDF, runs `pdf-parse`, saves row with `parsed_text`. If extraction returns empty/too-short text → `400` with human-readable error.
+**Frontend:** `useAnalysis.ts` query/mutation hooks. Minimal `/copilot` page — resume select + JD textarea + Analyze button, results rendered as plain text/numbers (no score bar styling yet).
 
-**Frontend:** Wire upload dialog to the real endpoint, list real resumes, wire rename/delete/set-active to `PATCH`/`DELETE`.
+### 09 Resume Optimizer _(both)_
 
----
+**Backend:** `services/ai/prompts/resumeOptimizer.ts`, `POST /api/analyses/:id/optimize`.
 
-## Phase 4 — The Copilot Flow (flagship)
+**Frontend:** Mutation hook + a plain "Optimize" button and result block on `/copilot`.
 
-### 10 Copilot Page — Full UI
+### 10 Cover Letter Generator _(both)_
 
-**Frontend:** `/copilot` 3-column UI with mock data — input panel (resume select/upload, JD textarea), processing/loading states, output results panel (ATS Score Dashboard, Insights Panel, Output Tabs for Resume/Cover Letter/Interview Qs).
+**Backend:** `services/ai/prompts/coverLetter.ts`, `POST /api/analyses/:id/cover-letter` with `{ tone }`, optional PDF render via `services/pdf/generatePdf.tsx`.
 
-### 11 ATS Analysis — AI Service
+**Frontend:** Tone selector (plain `<select>`), generate button, editable textarea, download link — on `/copilot`.
 
-**Backend:** `services/ai/aiClient.ts` (Gemini → DeepSeek fallback wrapper) and `services/ai/prompts/atsAnalysis.ts`. `POST /api/analyses` runs the prompt, validates the structured JSON shape, saves a `job_analyses` row, returns it.
+### 11 Mock Interview Generator _(both)_
 
-**Frontend:** Wire Analyze button to `POST /api/analyses`, render real ATS Score Dashboard (overall/skills/experience/education + missing keywords) and Insights Panel (strengths/weaknesses) from the response.
+**Backend:** `services/ai/prompts/interviewQuestions.ts`, `POST /api/interview` with `{ role, difficulty }` — reusable from the Copilot tab and the standalone page.
 
-### 12 Resume Optimizer
+**Frontend:** `useInterview.ts` hook. Minimal `/interview` page — role/difficulty selectors, Generate button, plain question list with show/hide answer.
 
-**Backend:** `services/ai/prompts/resumeOptimizer.ts`, `POST /api/analyses/:id/optimize` — loads the analysis + original resume text, runs the prompt, saves `optimized_resumes` row.
-
-**Frontend:** Wire "Optimize Resume" tab — side-by-side original vs optimized view, Download PDF button.
-
-### 13 Cover Letter Generator
-
-**Backend:** `services/ai/prompts/coverLetter.ts`, `POST /api/analyses/:id/cover-letter` with `{ tone }`. Generates content, optionally renders PDF via `services/pdf/generatePdf.tsx`, saves `cover_letters` row.
-
-**Frontend:** Wire "Cover Letter" tab — tone selector, editable textarea pre-filled with AI output, Download PDF button.
-
-### 14 Mock Interview Generator (from Copilot context)
-
-**Backend:** `services/ai/prompts/interviewQuestions.ts`, reusable by both the Copilot tab and the standalone `/interview` page.
-
-**Frontend:** Wire "Interview Qs" tab on the Copilot results screen — question cards with Show Answer / Next Question.
-
----
-
-## Phase 5 — Standalone Interview Practice
-
-### 15 Interview Page — Full UI
-
-**Frontend:** `/interview` page UI with mock data — role selector, difficulty selector, Generate button, question cards grouped Technical/Behavioral/HR.
-
-### 16 Interview Page — Wired
-
-**Backend:** `POST /api/interview` with `{ role, difficulty }`, no resume/JD required — generates a fresh question set, saves `interview_sessions` row.
-
-**Frontend:** Wire Generate button to the endpoint, render real questions with model answers and follow-ups.
-
----
-
-## Phase 6 — Application Tracker
-
-### 17 Applications Page — Full UI
-
-**Frontend:** `/applications` Kanban UI with mock data — columns Applied/Screening/Interview/Rejected/Offer, draggable cards, filter bar, stats row.
-
-### 18 Applications — Wired
+### 12 Application Tracker _(both)_
 
 **Backend:** `GET/POST/PATCH/DELETE /api/applications` — full CRUD, scoped to `user_id`.
 
-**Frontend:** Wire board to real data, drag-to-update-status calls `PATCH`, add/edit/delete dialogs wired, stats row computed from real data.
+**Frontend:** `useApplications.ts` hooks. Minimal `/applications` page — plain list grouped by status (no drag-and-drop, no Kanban columns yet), add/edit/delete working.
+
+### 13 Dashboard Data _(both)_
+
+**Backend:** `GET /api/dashboard/stats` (plain `COUNT` queries), `GET /api/dashboard/activity` (union of recent rows, last 10).
+
+**Frontend:** `useDashboard.ts` hooks. Minimal `/dashboard` page — plain numbers and a plain activity list.
+
+### 14 Settings — Functional
+
+**Frontend:** `/settings` wired to better-auth — update name/email, theme toggle (stored in `uiSlice`), delete account flow. No backend involvement (this repo never owns user data).
 
 ---
 
-## Phase 7 — Dashboard
+## Phase 3 — Design Pass (Frontend Only)
 
-### 19 Dashboard Page — Full UI
+Every page above already works. This phase applies `ui-rules.md` and `ui-tokens.md` exactly — radius, shadow elevation, the marketing-vs-in-app button/typography registers, the Vercel mesh gradient on the hero, badge colors, the Kanban board's real drag-and-drop, the ATS score bar. Run `/imprint` after each one.
 
-**Frontend:** `/dashboard` UI with mock data — four stat cards, recent activity list, quick action buttons, incomplete-resume banner if no active resume.
+### 15 Landing Page — Design
 
-### 20 Dashboard — Real Data
+Full hero (mesh gradient), Features, How It Works, FAQ, Footer, public navbar.
 
-**Backend:** `GET /api/dashboard/stats` (plain `COUNT` queries across the four tables) and `GET /api/dashboard/activity` (union + sort of recent rows across `resumes`, `job_analyses`, `cover_letters`, `applications`, last 10).
+### 16 Pricing Page — Design
 
-**Frontend:** Wire stat cards and activity feed to the real endpoints.
+Pricing cards (`pricing-card` chrome), free-tier presentation.
 
----
+### 17 App Shell — Design
 
-## Phase 8 — Settings
+Sidebar to spec (active indicator, ghost hover states), full in-app radius/spacing register.
 
-### 21 Settings Page
+### 18 Resumes Page — Design
 
-**Frontend:** `/settings` — profile fields (from better-auth user), theme toggle, delete account flow (calls better-auth's delete-user action; backend is not involved since it never owns user data).
+Real table chrome (mono-caption headers, hover states), upload dialog, ATS-score-per-resume display.
+
+### 19 Copilot Page — Design
+
+3-column layout, processing/loading states, ATS Score Dashboard (score bar bands), Insights Panel, Output Tabs.
+
+### 20 Applications Page — Design
+
+Real Kanban board with `@dnd-kit/core` drag-and-drop, status badge colors, stats row.
+
+### 21 Interview Page — Design
+
+Question cards with category badges, Show Answer / Next Question interaction polish.
+
+### 22 Dashboard — Design
+
+Stat cards, recent activity feed styling, incomplete-resume banner.
+
+### 23 Settings Page — Design
+
+Form layout, theme toggle styling, delete-account confirmation dialog.
 
 ---
 
 ## Feature Count
 
-| Phase                         | Features |
-| ----------------------------- | -------- |
-| Phase 1 — Foundation          | 4        |
-| Phase 2 — App Shell           | 3        |
-| Phase 3 — Resume Manager      | 2        |
-| Phase 4 — Copilot Flow        | 5        |
-| Phase 5 — Interview Practice  | 2        |
-| Phase 6 — Application Tracker | 2        |
-| Phase 7 — Dashboard           | 2        |
-| Phase 8 — Settings            | 1        |
-| **Total**                     | **21**   |
+| Phase                                | Features |
+| ------------------------------------ | -------- |
+| Phase 1 — Foundation                 | 6        |
+| Phase 2 — Core Features (functional) | 8        |
+| Phase 3 — Design Pass (frontend)     | 9        |
+| **Total**                            | **23**   |
