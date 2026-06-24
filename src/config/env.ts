@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const envFilePath = path.resolve(__dirname, "../../.env");
 
-if (existsSync(envFilePath)) {
+if (existsSync(envFilePath) && typeof process.loadEnvFile === "function") {
   process.loadEnvFile(envFilePath);
 }
 
