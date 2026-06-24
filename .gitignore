@@ -17,8 +17,8 @@
 /.next/
 /out/
 /dist/
-/migrations/
-
+/# /migrations/
+DEPLOY_RENDER.md
 # production
 /build
 

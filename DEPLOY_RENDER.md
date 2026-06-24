@@ -17,6 +17,9 @@ This backend is an Express + TypeScript app that connects to PostgreSQL and vali
 
 Create a new **Web Service** on Render from this backend repository.
 
+Important: set the service **Root Directory** to `ai-resume-backend`.
+That makes Render run the build from the backend folder, so Sequelize can find `migrations/`.
+
 ### Build command
 
 ```bash
@@ -63,6 +66,8 @@ Notes:
 This project uses Sequelize migrations. Run them after the database is connected and before the app is used in production.
 
 If you are using a free Render web service and do not want to use shell access or a one-off job, run the migration during the build phase.
+
+This only works if the service root is `ai-resume-backend`.
 
 Set your Render build command to:
 
