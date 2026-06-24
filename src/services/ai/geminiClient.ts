@@ -45,7 +45,12 @@ export async function generateWithGemini(
   );
 
   if (!response.ok) {
-    throw new Error(`Gemini request failed with status ${response.status}`);
+    const body = await response.text();
+    throw new Error(
+      `Gemini request failed with status ${response.status}${
+        body.trim().length > 0 ? `: ${body.trim().slice(0, 240)}` : ""
+      }`,
+    );
   }
 
   const payload = (await response.json()) as GeminiResponse;

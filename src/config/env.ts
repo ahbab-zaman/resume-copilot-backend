@@ -13,14 +13,8 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().url(),
   PORT: z.coerce.number().int().positive().default(4000),
   GEMINI_API_KEY: z.string().min(1).optional(),
-  DEEPSEEK_API_KEY: z.string().min(1).optional(),
-}).refine(
-  (value) => Boolean(value.GEMINI_API_KEY || value.DEEPSEEK_API_KEY),
-  {
-    message: "At least one AI provider key must be configured",
-    path: ["GEMINI_API_KEY"],
-  },
-);
+  OPEN_ROUTER_API_KEY: z.string().min(1),
+});
 
 const parsed = envSchema.safeParse(process.env);
 

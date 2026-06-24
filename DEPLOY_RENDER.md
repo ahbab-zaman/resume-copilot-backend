@@ -11,9 +11,9 @@ This backend is an Express + TypeScript app that connects to PostgreSQL and vali
   - `FRONTEND_URL`
   - `PORT` is optional on Render
 - `GEMINI_API_KEY`
-- `DEEPSEEK_API_KEY`
+- `OPEN_ROUTER_API_KEY`
 
-At least one of the AI provider keys must be present. Set both if you want Gemini fallback to DeepSeek.
+Gemini is the primary provider. OpenRouter is the fallback provider.
 
 ## Recommended Render setup
 
@@ -54,7 +54,7 @@ Set these in Render:
 DATABASE_URL=postgresql://...
 FRONTEND_URL=https://your-frontend-domain.com
 GEMINI_API_KEY=...
-DEEPSEEK_API_KEY=...
+OPEN_ROUTER_API_KEY=...
 ```
 
 Notes:
@@ -127,7 +127,7 @@ The backend also allows the frontend origin through CORS, so the frontend URL an
 - Use a Render Postgres database
 - Set `DATABASE_URL` with SSL enabled
 - Set `FRONTEND_URL` to the live frontend URL
-- Set `GEMINI_API_KEY` and `DEEPSEEK_API_KEY`
+- Set `GEMINI_API_KEY` and `OPEN_ROUTER_API_KEY`
 - Run migrations
 - Confirm `/health` is healthy
 - Confirm frontend requests succeed against the Render URL

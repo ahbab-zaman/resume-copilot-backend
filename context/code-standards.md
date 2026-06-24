@@ -27,7 +27,7 @@
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `routes/`           | Route → controller wiring only. No logic.                                                                                                                                      |
 | `controllers/`      | Request validation, calling services, shaping the `{ success, data, error }` response. No direct AI SDK calls, no direct Sequelize queries beyond what a thin service exposes. |
-| `services/ai/`      | All Gemini/DeepSeek calls and the fallback wrapper. Never imports Express types.                                                                                               |
+| `services/ai/`      | All Gemini/OpenRouter calls and the fallback wrapper. Never imports Express types.                                                                                              |
 | `services/pdf/`     | PDF rendering only.                                                                                                                                                            |
 | `services/parsing/` | pdf-parse text extraction only.                                                                                                                                                |
 | `models/`           | Sequelize model definitions only.                                                                                                                                              |
@@ -162,7 +162,7 @@ export async function verifyAuth(
 ```typescript
 // services/ai/aiClient.ts
 import { generateWithGemini } from "./geminiClient";
-import { generateWithDeepSeek } from "./deepseekClient";
+import { generateWithOpenRouter } from "./openrouterClient";
 import { logAgentEvent } from "../../utils/logger";
 
 export async function generateStructured<T>(
@@ -182,14 +182,18 @@ export async function generateStructured<T>(
       message: `Gemini failed: ${String(geminiError)}`,
     });
     try {
-      const result = await generateWithDeepSeek<T>(systemPrompt, userPrompt);
-      return { success: true, data: result, modelUsed: "deepseek-v3" };
-    } catch (deepseekError) {
+      const result = await generateWithOpenRouter<T>(
+        ["deepseek/deepseek-chat-v3-0324:free", "qwen/qwen3-235b-a22b:free"],
+        systemPrompt,
+        userPrompt,
+      );
+      return { success: true, data: result, modelUsed: "openrouter" };
+    } catch (fallbackError) {
       await logAgentEvent({
         userId,
         feature,
         level: "error",
-        message: `DeepSeek also failed: ${String(deepseekError)}`,
+        message: `OpenRouter also failed: ${String(fallbackError)}`,
       });
       return {
         success: false,
@@ -202,7 +206,7 @@ export async function generateStructured<T>(
 
 **Rules:**
 
-- Controllers never call `geminiClient.ts` or `deepseekClient.ts` directly — always through `generateStructured()`.
+- Controllers never call `geminiClient.ts` or `openrouterClient.ts` directly — always through `generateStructured()`.
 - Every AI feature (ATS analysis, optimizer, cover letter, interview questions) has its own prompt file under `services/ai/prompts/`, each exporting a `systemPrompt` string and a `buildUserPrompt(...)` function.
 - A failure of both models is always logged to `agent_logs` before returning the generic error to the client — never let the raw provider error reach the response.
 - Parsed JSON from either provider is validated against the expected shape before being saved or returned — wrap `JSON.parse` in try/catch.
@@ -292,7 +296,7 @@ JobAnalysis.init(
 | `DATABASE_URL`     | `config/db.ts`                             |
 | `FRONTEND_URL`     | `middleware/verifyAuth.ts` (JWKS endpoint) |
 | `GEMINI_API_KEY`   | `services/ai/geminiClient.ts`              |
-| `DEEPSEEK_API_KEY` | `services/ai/deepseekClient.ts`            |
+| `OPEN_ROUTER_API_KEY` | `services/ai/openrouterClient.ts`         |
 | `PORT`             | `server.ts`                                |
 
 Never hardcode any key or URL anywhere in the codebase.
@@ -307,7 +311,7 @@ Approved for this repo:
 - `sequelize`, `pg`, `pg-hstore`
 - `jose` — JWT verification against the frontend's JWKS
 - `@google/genai` — Gemini SDK
-- `openai` — used with DeepSeek's OpenAI-compatible endpoint
+- OpenRouter-compatible `fetch` calls — used for fallback model routing
 - `@react-pdf/renderer` — PDF generation
 - `pdf-parse` — resume text extraction
 - `multer` — multipart file upload handling
