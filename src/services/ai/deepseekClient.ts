@@ -1,3 +1,5 @@
+import { env } from "../../config/env";
+
 type DeepSeekResponse = {
   choices?: Array<{
     message?: {
@@ -6,23 +8,18 @@ type DeepSeekResponse = {
   }>;
 };
 
-function getDeepSeekApiKey(): string {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) {
-    throw new Error("DEEPSEEK_API_KEY is not configured");
-  }
-
-  return apiKey;
-}
-
 export async function generateWithDeepSeek(
   systemPrompt: string,
   userPrompt: string,
 ): Promise<string> {
+  if (!env.DEEPSEEK_API_KEY) {
+    throw new Error("DEEPSEEK_API_KEY is not configured");
+  }
+
   const response = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${getDeepSeekApiKey()}`,
+      Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -49,4 +46,3 @@ export async function generateWithDeepSeek(
 
   return text;
 }
-

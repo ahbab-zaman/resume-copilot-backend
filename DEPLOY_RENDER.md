@@ -10,8 +10,10 @@ This backend is an Express + TypeScript app that connects to PostgreSQL and vali
   - `DATABASE_URL`
   - `FRONTEND_URL`
   - `PORT` is optional on Render
-  - `GEMINI_API_KEY`
-  - `DEEPSEEK_API_KEY`
+- `GEMINI_API_KEY`
+- `DEEPSEEK_API_KEY`
+
+At least one of the AI provider keys must be present. Set both if you want Gemini fallback to DeepSeek.
 
 ## Recommended Render setup
 
