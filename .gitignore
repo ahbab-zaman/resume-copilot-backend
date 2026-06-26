@@ -43,5 +43,9 @@ yarn-error.log*
 next-env.d.ts
 
 # skills
-# /context/
-# /.agents/
+/.agents/
+/context/
+/AGENTS.md
+/CLAUDE.md
+/DEPLOY_RENDER.md
+/memory.md
